@@ -1,0 +1,72 @@
+{
+	"version": 2,
+    "cmakeMinimumRequired": {
+        "major": 3,
+        "minor": 20,
+        "patch": 0
+    },
+	"configurePresets": [
+		{
+			"name": "base",
+			"hidden": true,
+			"binaryDir": "${sourceDir}/build",
+			"cacheVariables": {
+				"CMAKE_EXPORT_COMPILE_COMMANDS": true
+			}
+		},
+		{
+			"name": "clang",
+			"displayName": "clang",
+			"inherits": [
+				"base"
+			],
+			"generator": "Ninja Multi-Config",
+			"cacheVariables": {
+				"CMAKE_C_COMPILER": "clang"
+			}
+		},
+		{
+			"name": "gcc",
+			"displayName": "gcc",
+			"inherits": [
+				"base"
+			],
+			"generator": "Ninja Multi-Config",
+			"cacheVariables": {
+				"CMAKE_C_COMPILER": "gcc"
+			}
+		}
+	],
+	"buildPresets": [
+		{
+			"name": "clang_release",
+			"configurePreset": "clang",
+			"configuration": "Release"
+		},
+		{
+			"name": "clang_debug",
+			"configurePreset": "clang",
+			"configuration": "Debug"
+		},
+		{
+			"name": "clang_release_dbginfo",
+			"configurePreset": "clang",
+			"configuration": "RelWithDebInfo"
+		},
+		{
+			"name": "gcc_release",
+			"configurePreset": "gcc",
+			"configuration": "Release"
+		},
+		{
+			"name": "gcc_debug",
+			"configurePreset": "gcc",
+			"configuration": "Debug"
+		},
+		{
+			"name": "gcc_release_dbginfo",
+			"configurePreset": "gcc",
+			"configuration": "RelWithDebInfo"
+		}
+	]
+}

@@ -1,0 +1,14 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "type": "lldb",
+      "request": "launch",
+      "name": "debug lox",
+      "program": "${command:cmake.buildDirectory}/${command:cmake.buildType}/lox",
+      "args": ["tests/parser.lox"],
+      "cwd": "${workspaceFolder}",
+      "stopOnEntry": false
+    },
+  ]
+}

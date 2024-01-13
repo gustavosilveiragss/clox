@@ -1,0 +1,42 @@
+print "one";
+print true;
+print 2 + 1;
+print (1 * 2);
+print (1 + 8) * 2;
+print -1;
+print -(1+2) - 3;
+print !true;
+
+var s = "aa";
+print s + "uu";
+
+var a = 1;
+var b = 2;
+var c;
+b = a + b;
+print b;
+print c;
+print (a + b) * 7 * b + (a/3);
+
+var a = "global a";
+var b = "global b";
+var c = "global c";
+{
+  var a = "outer a";
+  var b = "outer b";
+  {
+    var a = "inner a";
+    print a;
+    print b;
+    print c;
+  }
+  print a;
+  print b;
+  print c;
+}
+print a;
+print b;
+print c;
+
+print "hi" or 2; // "hi".
+print nil or "yes"; // "yes".
