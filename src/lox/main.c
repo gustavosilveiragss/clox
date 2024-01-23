@@ -1,7 +1,14 @@
-#include <stdio.h>
-#include <stdlib.h>
+#include <shared/common.h>
+#include <shared/Chunk.h>
+#include <shared/Debug.h>
 
 int main() {
-    printf("aa\n");
+    Chunk chunk;
+    initChunk(&chunk);
+    writeChunk(&chunk, OP_RETURN);
+
+    disassembleChunk(&chunk, "test chunk");
+
+    freeChunk(&chunk);
     return 0;
 }
