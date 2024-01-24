@@ -19,11 +19,13 @@ typedef enum {
  * @var Chunk::capacity The number of instructions the list can hold
  * @var Chunk::code The list of instructions
  * @var Chunk::constants The Constant Pool used by the instructions
+ * @var Chunk::lines The line numbers of the instructions
  */
 typedef struct {
     int count;
     int capacity;
     uint8_t* code;
+    int* lines;
     ValueArray constants;
 } Chunk;
 
@@ -43,8 +45,9 @@ void freeChunk(Chunk* chunk);
  * @brief Write a byte to the bytecode chunk
  * @param chunk The chunk to write to
  * @param byte The byte to write
+ * @param line The line number of the instruction
  */
-void writeChunk(Chunk* chunk, uint8_t byte);
+void writeChunk(Chunk* chunk, uint8_t byte, int line);
 
 /**
  * @brief Add a constant to the constant pool
