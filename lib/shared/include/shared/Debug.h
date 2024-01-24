@@ -1,6 +1,7 @@
 #pragma once
 
 #include <shared/Chunk.h>
+#include <shared/Value.h>
 
 /**
  * @brief Disassembles the given chunk and prints it to stdout.
@@ -16,3 +17,9 @@ void disassembleChunk(Chunk* chunk, const char* name);
  * @return The offset of the next instruction.
  */
 int disassembleInstruction(Chunk* chunk, int offset);
+
+/**
+ * @brief Prints a value to stdout.
+ * @param value The value to print.
+ */
+void printValue(Value value);

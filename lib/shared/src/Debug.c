@@ -1,6 +1,21 @@
 #include <shared/Debug.h>
 
 /**
+ * @brief Static function for printing a constant value, fetching the value from a Chunk's Constant Pool.
+ * @param name Instruction name
+ * @param chunk The Chunk to fetch the constant from
+ * @param offset Byte offset of the constant
+ * @return The offset of the next instruction.
+ */
+static int constantInstruction(const char* name, Chunk* chunk, int offset) {
+    uint8_t constant = chunk->code[offset + 1];
+    printf("%-16s %4d '", name, constant);
+    printValue(chunk->constants.values[constant]);
+    printf("'\n");
+    return offset + 2; // +1 for the opcode +1 for the constant
+}
+
+/**
  * @brief Static function for printing a simple instruction.
  * @param name Instruction name
  * @param offset Byte offset of given instruction
@@ -23,10 +38,16 @@ int disassembleInstruction(Chunk* chunk, int offset) {
 
     uint8_t instruction = chunk->code[offset];
     switch (instruction) {
-        case OP_RETURN:
-            return simpleInstruction("OP_RETURN", offset);
-        default:
-            printf("Unknown opcode %d\n", instruction);
-            return offset + 1;
+    case OP_CONSTANT:
+        return constantInstruction("OP_CONSTANT", chunk, offset);
+    case OP_RETURN:
+        return simpleInstruction("OP_RETURN", offset);
+    default:
+        printf("Unknown opcode %d\n", instruction);
+        return offset + 1;
     }
+}
+
+void printValue(Value value) {
+    printf("%g", value);
 }
