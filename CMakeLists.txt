@@ -16,6 +16,7 @@ target_sources(shared PRIVATE
     lib/shared/src/Memory.c
     lib/shared/src/Chunk.c
     lib/shared/src/Value.c
+    lib/shared/src/VM.c
 )
 target_include_directories(shared PUBLIC lib/shared/include)
 target_compile_options(shared PRIVATE ${COMPILE_OPTIONS})
