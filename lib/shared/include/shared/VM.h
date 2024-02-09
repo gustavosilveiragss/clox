@@ -43,11 +43,11 @@ void initVM();
 void freeVM();
 
 /**
- * @brief Interprets a Chunk.
- * @param chunk The Chunk to interpret.
- * @return The result of interpreting the Chunk.
+ * @brief Interprets a source code.
+ * @param source The source code to interpret.
+ * @return The result of interpreting the source code.
  */
-InterpretResult interpret(Chunk* chunk);
+InterpretResult interpret(const char* source);
 
 /**
  * @brief Pushes a Value onto the stack.

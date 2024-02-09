@@ -1,5 +1,6 @@
 #include <shared/VM.h>
 #include <shared/Debug.h>
+#include <shared/Compiler.h>
 
 VM vm;
 
@@ -10,11 +11,11 @@ VM vm;
 static InterpretResult run() {
 #define READ_BYTE() (*vm.ip++)
 #define READ_CONSTANT() (vm.chunk->constants.values[READ_BYTE()])
-#define BINARY_OP(op) \
-    do { \
-      double b = pop(); \
-      double a = pop(); \
-      push(a op b); \
+#define BINARY_OP(op)     \
+    do {                  \
+        double b = pop(); \
+        double a = pop(); \
+        push(a op b);     \
     } while (false)
 
     for (;;) {
@@ -68,9 +69,7 @@ static InterpretResult run() {
 #undef BINARY_OP
 }
 
-/**
- * @brief Resets the VM stack by setting the stack top to the bottom of the stack.
- */
+/// @brief Resets the VM stack by setting the stack top to the bottom of the stack.
 static void resetStack() {
     vm.stackTop = vm.stack;
 }
@@ -82,10 +81,9 @@ void initVM() {
 void freeVM() {
 }
 
-InterpretResult interpret(Chunk* chunk) {
-    vm.chunk = chunk;
-    vm.ip = vm.chunk->code;
-    return run();
+InterpretResult interpret(const char* source) {
+    compile(source);
+    return INTERPRET_OK;
 }
 
 void push(Value value) {
