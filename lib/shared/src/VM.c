@@ -8,7 +8,6 @@ VM vm;
  * @brief Runs the Virtual Machine. Executes each instruction in the Chunk.
  * @return The result of running the Virtual Machine.
  */
-/*
 static InterpretResult run() {
 #define READ_BYTE() (*vm.ip++)
 #define READ_CONSTANT() (vm.chunk->constants.values[READ_BYTE()])
@@ -69,7 +68,6 @@ static InterpretResult run() {
 #undef READ_CONSTANT
 #undef BINARY_OP
 }
-*/
 
 /// @brief Resets the VM stack by setting the stack top to the bottom of the stack.
 static void resetStack() {
@@ -84,8 +82,21 @@ void freeVM() {
 }
 
 InterpretResult interpret(const char* source) {
-    compile(source);
-    return INTERPRET_OK;
+    Chunk chunk;
+    initChunk(&chunk);
+
+    if (!compile(source, &chunk)) {
+        freeChunk(&chunk);
+        return INTERPRET_COMPILE_ERROR;
+    }
+
+    vm.chunk = &chunk;
+    vm.ip = vm.chunk->code;
+
+    InterpretResult result = run();
+
+    freeChunk(&chunk);
+    return result;
 }
 
 void push(Value value) {
