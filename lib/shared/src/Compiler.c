@@ -3,6 +3,10 @@
 #include <shared/Scanner.h>
 #include <shared/VM.h>
 
+#ifdef DEBUG_PRINT_CODE
+    #include <shared/Debug.h>
+#endif
+
 Parser parser;
 Chunk* compilingChunk;
 
@@ -88,44 +92,9 @@ static void emitByte(uint8_t byte) {
     writeChunk(currentChunk(), byte, parser.previous.line);
 }
 
-/// @brief Finalizes the bytecode for the current chunk being compiled by emitting a return operation.
-static void endCompiler() {
+/// @brief Emits an OP_RETURN instruction to the current chunk
+static void emitReturn() {
     emitByte(OP_RETURN);
-}
-
-/// @brief Parses an expression in the source code.
-static void expression() {
-    parsePrecedence(PREC_ASSIGNMENT);
-}
-
-/// @brief Parses a unary expression in the source code.
-static void unary() {
-    TokenType operatorType = parser.previous.type;
-
-    // Compile the operand.
-    parsePrecedence(PREC_UNARY);
-
-    switch (operatorType) {
-    case TOKEN_MINUS:
-        emitByte(OP_NEGATE);
-        break;
-    default:
-        return;
-    }
-}
-
-/**
- * @brief Starts at the current token and parses any expression at the given precedence level or higher.
- * @param precedence The precedence to parse
- */
-static void parsePrecedence(Precedence precedence) {
-    // What goes here?
-}
-
-/// @brief Parses a grouping expression ("(" and ")") in the source code.
-static void grouping() {
-    expression();
-    consume(TOKEN_RIGHT_PAREN, "Expect ')' after expression.");
 }
 
 /**
@@ -152,8 +121,156 @@ static uint8_t makeConstant(Value value) {
  */
 static void emitConstant(Value value) {
     emitByte(OP_CONSTANT);
-    emitByte(makeConstant(currentChunk()));
+    emitByte(makeConstant(value));
     emitByte(value);
+}
+
+/// @brief Finalizes the bytecode for the current chunk being compiled
+static void endCompiler() {
+    emitReturn();
+
+#ifdef DEBUG_PRINT_CODE
+    if (!parser.hadError) {
+        disassembleChunk(currentChunk(), "code");
+    }
+#endif
+}
+
+/// @brief Parses a number in the source code.
+static void expression();
+
+/**
+ * @brief Given a token type, returns the corresponding parse rule
+ * @param type The token type
+ * @return The parse rule for the given token type
+ */
+static ParseRule* getRule(TokenType type);
+
+/**
+ * @brief Starts at the current token and parses any expression at the given precedence level or higher.
+ * @param precedence The precedence to parse
+ */
+static void parsePrecedence(Precedence precedence);
+
+/// @brief Parses a binary expression in the source code.
+static void binary() {
+    TokenType operatorType = parser.previous.type;
+    ParseRule* rule = getRule(operatorType);
+    parsePrecedence((Precedence)(rule->precedence + 1));
+
+    switch (operatorType) {
+    case TOKEN_PLUS:
+        emitByte(OP_ADD);
+        break;
+    case TOKEN_MINUS:
+        emitByte(OP_SUBTRACT);
+        break;
+    case TOKEN_STAR:
+        emitByte(OP_MULTIPLY);
+        break;
+    case TOKEN_SLASH:
+        emitByte(OP_DIVIDE);
+        break;
+    default:
+        return; // Unreachable.
+    }
+}
+
+/// @brief Parses a number in the source code.
+static void number() {
+    double value = strtod(parser.previous.start, NULL);
+    emitConstant(value);
+}
+
+static void expression() {
+    parsePrecedence(PREC_ASSIGNMENT);
+}
+
+/// @brief Parses a unary expression in the source code.
+static void unary() {
+    TokenType operatorType = parser.previous.type;
+
+    // Compile the operand.
+    parsePrecedence(PREC_UNARY);
+
+    switch (operatorType) {
+    case TOKEN_MINUS:
+        emitByte(OP_NEGATE);
+        break;
+    default:
+        return;
+    }
+}
+
+static void parsePrecedence(Precedence precedence) {
+    advance();
+
+    ParseFn prefixRule = getRule(parser.previous.type)->prefix;
+    if (prefixRule == NULL) {
+        error("Expect expression.");
+        return;
+    }
+
+    prefixRule();
+
+    while (precedence <= getRule(parser.current.type)->precedence) {
+        advance();
+        ParseFn infixRule = getRule(parser.previous.type)->infix;
+        infixRule();
+    }
+}
+
+/// @brief Parses a grouping expression ("(" and ")") in the source code.
+static void grouping() {
+    expression();
+    consume(TOKEN_RIGHT_PAREN, "Expect ')' after expression.");
+}
+
+ParseRule rules[] = {
+    [TOKEN_LEFT_PAREN] = {grouping, NULL,   PREC_NONE  },
+    [TOKEN_RIGHT_PAREN] = { NULL,    NULL,   PREC_NONE  },
+    [TOKEN_LEFT_BRACE] = { NULL,    NULL,   PREC_NONE  },
+    [TOKEN_RIGHT_BRACE] = { NULL,    NULL,   PREC_NONE  },
+    [TOKEN_COMMA] = { NULL,    NULL,   PREC_NONE  },
+    [TOKEN_DOT] = { NULL,    NULL,   PREC_NONE  },
+    [TOKEN_MINUS] = { unary,   binary, PREC_TERM  },
+    [TOKEN_PLUS] = { NULL,    binary, PREC_TERM  },
+    [TOKEN_SEMICOLON] = { NULL,    NULL,   PREC_NONE  },
+    [TOKEN_SLASH] = { NULL,    binary, PREC_FACTOR},
+    [TOKEN_STAR] = { NULL,    binary, PREC_FACTOR},
+    [TOKEN_BANG] = { NULL,    NULL,   PREC_NONE  },
+    [TOKEN_BANG_EQUAL] = { NULL,    NULL,   PREC_NONE  },
+    [TOKEN_EQUAL] = { NULL,    NULL,   PREC_NONE  },
+    [TOKEN_EQUAL_EQUAL] = { NULL,    NULL,   PREC_NONE  },
+    [TOKEN_GREATER] = { NULL,    NULL,   PREC_NONE  },
+    [TOKEN_GREATER_EQUAL] = { NULL,    NULL,   PREC_NONE  },
+    [TOKEN_LESS] = { NULL,    NULL,   PREC_NONE  },
+    [TOKEN_LESS_EQUAL] = { NULL,    NULL,   PREC_NONE  },
+    [TOKEN_IDENTIFIER] = { NULL,    NULL,   PREC_NONE  },
+    [TOKEN_STRING] = { NULL,    NULL,   PREC_NONE  },
+    [TOKEN_NUMBER] = { number,  NULL,   PREC_NONE  },
+    [TOKEN_AND] = { NULL,    NULL,   PREC_NONE  },
+    [TOKEN_CLASS] = { NULL,    NULL,   PREC_NONE  },
+    [TOKEN_ELSE] = { NULL,    NULL,   PREC_NONE  },
+    [TOKEN_FALSE] = { NULL,    NULL,   PREC_NONE  },
+    [TOKEN_FOR] = { NULL,    NULL,   PREC_NONE  },
+    [TOKEN_FUN] = { NULL,    NULL,   PREC_NONE  },
+    [TOKEN_IF] = { NULL,    NULL,   PREC_NONE  },
+    [TOKEN_NIL] = { NULL,    NULL,   PREC_NONE  },
+    [TOKEN_OR] = { NULL,    NULL,   PREC_NONE  },
+    [TOKEN_PRINT] = { NULL,    NULL,   PREC_NONE  },
+    [TOKEN_RETURN] = { NULL,    NULL,   PREC_NONE  },
+    [TOKEN_SUPER] = { NULL,    NULL,   PREC_NONE  },
+    [TOKEN_THIS] = { NULL,    NULL,   PREC_NONE  },
+    [TOKEN_TRUE] = { NULL,    NULL,   PREC_NONE  },
+    [TOKEN_VAR] = { NULL,    NULL,   PREC_NONE  },
+    [TOKEN_WHILE] = { NULL,    NULL,   PREC_NONE  },
+    [TOKEN_ERROR] = { NULL,    NULL,   PREC_NONE  },
+    [TOKEN_EOF] = { NULL,    NULL,   PREC_NONE  },
+};
+
+static ParseRule* getRule(TokenType type) {
+    return &rules[type];
 }
 
 bool compile(const char* source, Chunk* chunk) {

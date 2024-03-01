@@ -30,6 +30,21 @@ typedef enum {
     PREC_PRIMARY
 } Precedence;
 
+/// @brief Function type that takes no arguments and returns nothing.
+typedef void (*ParseFn)();
+
+/**
+ * @brief Parse rule for the compiler. Could be a prefix or infix rule.
+ * @var ParseRule::prefix the function to compile a prefix expression starting with a token of that type
+ * @var ParseRule::infix the function to compile an infix expression whose left operand is followed by a token of that type
+ * @var ParseRule::precedence the precedence of an infix expression that uses that token as an operator
+ */
+typedef struct {
+    ParseFn prefix;
+    ParseFn infix;
+    Precedence precedence;
+} ParseRule;
+
 /**
  * @brief Scans, parses, and compiles the source code.
  * @param source The source code to compile.
