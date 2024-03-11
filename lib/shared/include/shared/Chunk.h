@@ -3,13 +3,15 @@
 #include <shared/common.h>
 #include <shared/Value.h>
 
-/**
- * @brief Operation codes for instructions in the bytecode
- */
+/// @brief Operation codes for instructions in the bytecode
 typedef enum {
+    OP_NOT,
     OP_CONSTANT,
     OP_ADD,
     OP_SUBTRACT,
+    OP_NIL,
+    OP_TRUE,
+    OP_FALSE,
     OP_MULTIPLY,
     OP_DIVIDE,
     OP_NEGATE,
