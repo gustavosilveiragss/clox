@@ -86,6 +86,14 @@ typedef struct {
 } ValueArray;
 
 /**
+ * @brief Check if two Values are equal.
+ * @param a The first Value to compare
+ * @param b The second Value to compare
+ * @return Whether the two Values are equal
+ */
+bool valuesEqual(Value a, Value b);
+
+/**
  * @brief Initialize a ValueArray, with a capacity of 0.
  * @param array The ValueArray to initialize
  */
