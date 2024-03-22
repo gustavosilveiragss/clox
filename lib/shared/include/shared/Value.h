@@ -2,26 +2,36 @@
 
 #include <shared/common.h>
 
-/**
- * @brief The type of a Value.
- */
+/// @brief Representation of an object from Lox.
+typedef struct Obj Obj;
+
+/// @brief Representation of a string object from Lox.
+typedef struct ObjString ObjString;
+
+/// @brief The type of a Value.
 typedef enum {
     VAL_BOOL,
     VAL_NIL,
     VAL_NUMBER,
+    VAL_OBJ,
 } ValueType;
 
-/**
- * @brief Representation of a value from Lox.
- */
+/// @brief Representation of a value from Lox.
 typedef struct {
     ValueType type;
     union {
         bool boolean;
         double number;
+        Obj* obj;
     } as;
 } Value;
 
+/**
+ * @brief Get the object value of a Value.
+ * @param value The Value to get the object value of
+ * @return The object value of the Value
+ */
+#define AS_OBJ(value) ((value).as.obj)
 /**
  * @brief Get the boolean value of a Value.
  * @param value The Value to get the boolean value of
@@ -52,26 +62,37 @@ typedef struct {
  * @return The created Value
  */
 #define NUMBER_VAL(value) ((Value){ VAL_NUMBER, { .number = value } })
+/**
+ * @brief Create a Value with an object value.
+ * @param value The object value to create the Value with
+ * @return The created Value
+ */
+#define OBJ_VAL(value) ((Value){ VAL_OBJ, { .obj = (Obj*)value } })
 
 /**
  * @brief Check if a Value is a boolean.
  * @param value The Value to check
  * @return Whether the Value is a boolean
-*/
-#define IS_BOOL(value)    ((value).type == VAL_BOOL)
+ */
+#define IS_BOOL(value) ((value).type == VAL_BOOL)
 /**
  * @brief Check if a Value is nil.
  * @param value The Value to check
  * @return Whether the Value is nil
  */
-#define IS_NIL(value)     ((value).type == VAL_NIL)
+#define IS_NIL(value) ((value).type == VAL_NIL)
 /**
  * @brief Check if a Value is a number.
  * @param value The Value to check
  * @return Whether the Value is a number
  */
-#define IS_NUMBER(value)  ((value).type == VAL_NUMBER)
-
+#define IS_NUMBER(value) ((value).type == VAL_NUMBER)
+/**
+ * @brief Check if a Value is an object.
+ * @param value The Value to check
+ * @return Whether the Value is an object
+ */
+#define IS_OBJ(value) ((value).type == VAL_OBJ)
 
 /**
  * @brief A list for literal values. Used for the constant pool.
